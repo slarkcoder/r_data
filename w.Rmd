@@ -1,0 +1,230 @@
+Explore-and-Summarize-Data by 张超
+========================================================
+
+葡萄酒是目前世界上产量最大、普及最广的单糖酿造酒。红葡萄酒是用葡萄果实或葡萄汁，经过发酵酿制而成的酒精饮料。由于色泽喜庆，是人们喜欢的葡萄酒之一。而影响红葡萄酒口感的因素有很多，本文通过对 1599 条品酒师的打分数据进行分析，试图找出影响葡萄酒口感的因素。
+
+## 数据解释
+
+- fixed acidity | 固定酸度（酒石酸 - g / dm ^ 3）
+
+    大多数与葡萄酒相关的酸或固定或非挥发性物质（不易挥发）
+  
+- volatile acidity | 挥发酸度（乙酸-g / dm ^ 3）
+
+    葡萄酒中的乙酸含量过高会导致过多的醋味
+
+- citric acid | 柠檬酸（g / dm ^ 3）
+
+    少量发现，柠檬酸可以增加葡萄酒的“新鲜度”和风味
+  
+- residual sugar | 残糖（g / dm ^ 3）
+
+    发酵后残留的糖量停止，少见葡萄酒少于1克/升，大于45克/升的葡萄酒被认为是甜的
+  
+- chlorides | 氯化物（氯化钠-g / dm ^ 3
+
+    葡萄酒中的盐含量
+  
+- free sulfur dioxide | 游离二氧化硫（mg / dm 3）
+
+    游离形式的SO2存在于分子SO2（作为溶解气体）和亚硫酸氢盐离子之间的平衡中;它可以防止微生物生长和葡萄酒的氧化
+  
+- total sulfur dioxide | 二氧化硫总量（mg / dm ^ 3）
+
+    自由和结合形式的SO2量;在低浓度下，SO2在葡萄酒中大部分是不可检测的，但是在游离SO2浓度超过50ppm时，SO2在鼻子和味道上变得明显
+  
+- density | 密度（g / cm 3）
+
+    水的密度接近于水的密度，取决于酒精和糖含量的百分比
+  
+- pH
+
+    描述如何从0（非常酸性）到14（非常碱性）的葡萄酒的酸度或碱度。大多数葡萄酒的pH值在3-4之间
+  
+- sulphates | 硫酸盐（硫酸钾-g / dm3）
+
+    一种可以有助于二氧化硫（SO2）水平的葡萄酒添加剂，可以作为抗微生物剂和抗氧化剂
+  
+- alcohol | 酒精（％体积）
+
+    酒的酒精含量百分比
+  
+- quality | 评分（分数在 0~10 之间）
+
+    基于感官数据
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+library(ggplot2)
+library(ggthemr)
+library(dplyr)
+library(GGally)
+```
+
+```{r echo=FALSE, Load_the_Data}
+ggthemr('flat dark')
+wine <- read.csv('wineQualityReds.csv')
+
+str(wine)
+
+#数据属性
+attr(wine, 'names')
+```
+
+```{r}
+# 数据概览
+summary(wine)
+```
+
+# Univariate Plots Section
+```{r echo=FALSE}
+summary(wine$pH)
+# ph 值 直方图
+ggplot(wine, aes(x = pH)) + geom_histogram(aes(fill = ..count..), binwidth = 0.1)
+```
+
+```{r echo=FALSE}
+summary(wine$alcohol)
+# alcohol 的 直方图
+ggplot(wine, aes(x = alcohol)) + geom_histogram(aes(fill = ..count..), binwidth = 0.5)
+```
+
+```{r}
+summary(wine$citric.acid)
+# citric.acid 的 直方图
+ggplot(wine, aes(x = citric.acid)) + geom_histogram(aes(fill = ..count..), binwidth = 0.02)
+```
+
+```{r}
+summary(wine$residual.sugar)
+# residual.sugar 的 直方图
+ggplot(wine, aes(x = residual.sugar)) + geom_histogram(aes(fill = ..count..), binwidth = 0.5)
+```
+
+```{r}
+summary(wine$chlorides)
+# chlorides 的 直方图
+ggplot(wine, aes(x = chlorides)) + geom_histogram(aes(fill = ..count..), binwidth = 0.01)
+```
+
+```{r}
+summary(wine$quality)
+# quality 直方图
+ggplot(wine, aes(x = quality)) + geom_histogram(aes(fill = ..count..), binwidth = 1)
+```
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+
+本次单变量分析中使用的数据集均为一维向量，通过统计其中的 count 数通过直方图来反映值的集中程度。
+
+### What is/are the main feature(s) of interest in your dataset?
+
+从统计的 Count 数来看，在上面统计的这些变量中，ph、alcohol、citric.acid 、residual.sugar ，包括 quality 等都集中在某个区间内。大部分变量都符合正太分布。
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+
+每个变量的中位数、平均数等都可以帮助我进行进一步的研究。
+
+# Bivariate Plots Section
+```{r echo=FALSE, Bivariate_Plots}
+# pH 值和评分的散点图以及密度图，由于散点图密度太大，不容易区分密集程度，因此添加了一个密度曲线图
+ggplot(wine) + geom_point(aes(x = pH, y = quality)) + geom_density(aes(x = pH, colour = quality), color = 'white')
+```
+
+```{r}
+# ph 值对应的评分平均值
+wine_data <- data.frame(ph = wine$pH, quality = wine$quality)
+average_ph_quality <- tapply(wine_data[,'quality'], wine_data[,'ph'], mean)
+
+aq <- data.frame(average_ph_quality)
+ph <- as.numeric(rownames(aq))
+ph_data <- data.frame(ph)
+total_data <- cbind(aq, ph_data)
+
+ggplot(total_data, aes(x = ph, y = average_ph_quality)) + geom_line(aes(color = 'white'))
+```
+
+```{r}
+# ph 对应评分的平均值柱状图，ph 值在 3.1~3.5 之间的评分依然高于其他 ph 值时的评分
+ggplot(total_data, aes(x = ph)) + geom_histogram(binwidth = 0.1)
+```
+
+
+```{r}
+#酒精含量对应的评分平均值
+wine_data <- data.frame(alcohol = wine$alcohol, quality = wine$quality)
+average_alcohol_quality <- tapply(wine_data[,'quality'], wine_data[,'alcohol'], mean)
+
+#组合 data frame
+aq <- data.frame(average_alcohol_quality)
+alcohol <- as.numeric(rownames(aq))
+alcohol_data <- data.frame(alcohol)
+total_data <- cbind(aq, alcohol_data)
+
+#绘制折线图
+ggplot(total_data, aes(x = alcohol, y = average_alcohol_quality)) + geom_line(aes(color = 'white'))
+```
+
+```{r}
+# 酒精含量和评分平均值散点图，对数据做拟合（绿色透明部分为 95% 置信区间）。可以看到，酒精度数越高，获得的评分平均值越高，但是结合酒精度数出现的频率直方图可以看到，酒精度数越高，出现的次数反而越少，所以只凭平均值并不能得出酒精度数越高，评分越好的判断。
+ggplot(total_data, aes(x = alcohol, y = average_alcohol_quality)) + geom_point() + geom_smooth(method = lm)
+```
+
+```{r}
+#柠檬酸和评分平均值折线图
+wine_data <- data.frame(citric_acid = wine$citric.acid, quality = wine$quality)
+average_citric_acid_quality <- tapply(wine_data[,'quality'], wine_data[,'citric_acid'], mean)
+
+#组合 data frame
+aq <- data.frame(average_citric_acid_quality)
+citric_acid <- as.numeric(rownames(aq))
+citric_acid_data <- data.frame(citric_acid)
+total_data <- cbind(aq, citric_acid_data)
+
+#绘制折线图
+ggplot(total_data, aes(x = citric_acid, y = average_citric_acid_quality)) + geom_line(aes(color = 'white')) 
+```
+
+```{r}
+#柠檬酸和评分平均值的散点图以及拟合曲线（绿色透明部分为 95% 置信区间）
+ggplot(total_data, aes(x = citric_acid, y = average_citric_acid_quality)) + geom_point() + geom_smooth(method = lm)
+```
+
+```{r}
+#柠檬酸和对应的评分中位数折线图
+median_citric_acid_quality <- tapply(wine_data[,'quality'], wine_data[,'citric_acid'], median)
+
+#组合 data frame
+aq <- data.frame(median_citric_acid_quality)
+citric_acid <- as.numeric(rownames(aq))
+citric_acid_data <- data.frame(citric_acid)
+total_data <- cbind(aq, citric_acid_data)
+
+#绘制中位数折线图以及拟合曲线（绿色透明部分为 95% 置信区间）
+ggplot(total_data, aes(x = citric_acid, y = median_citric_acid_quality)) + geom_point() + geom_smooth(method = lm)
+```
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+从统计图上看，pH 值中评分最高的位于 3.3~3.4附近，酒精含量中评分最高的位于 12~13 附近。
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+citric_acid 柠檬酸值越高，可能导致评分下降，也可能导致平分变高，从统计图上来看，这部分数据的波动变化比较大。
+
+### What was the strongest relationship you found?
+
+- 评分较高的红葡萄酒的 pH 值位于 3.3~3.4 附近
+- 评分较高的红葡萄酒的酒精含量位于 12~13 附近
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+set.seed(1836)
+wine$quality <- factor(wine$quality, levels = c(3,4,5,6,7,8))
+ggpairs(wine, aes(colour = quality, alpha = 0.4))
+```
+
