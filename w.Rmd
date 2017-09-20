@@ -1,7 +1,10 @@
 Explore-and-Summarize-Data by 张超
 ========================================================
 
-葡萄酒是目前世界上产量最大、普及最广的单糖酿造酒。红葡萄酒是用葡萄果实或葡萄汁，经过发酵酿制而成的酒精饮料。由于色泽喜庆，是人们喜欢的葡萄酒之一。而影响红葡萄酒口感的因素有很多，本文通过对 1599 条品酒师的打分数据进行分析，试图找出影响葡萄酒口感的因素。
+葡萄酒是目前世界上产量最大、普及最广的单糖酿造酒。红葡萄酒是用葡萄果实或葡萄汁，
+经过发酵酿制而成的酒精饮料。由于色泽喜庆，是人们喜欢的葡萄酒之一。而影响红葡萄酒
+口感的因素有很多，本文通过对 1599 条品酒师的打分数据进行分析，试图找出影响葡萄酒
+口感的因素。
 
 ## 数据解释
 
@@ -27,11 +30,13 @@ Explore-and-Summarize-Data by 张超
   
 - free sulfur dioxide | 游离二氧化硫（mg / dm 3）
 
-    游离形式的SO2存在于分子SO2（作为溶解气体）和亚硫酸氢盐离子之间的平衡中;它可以防止微生物生长和葡萄酒的氧化
+    游离形式的SO2存在于分子SO2（作为溶解气体）和亚硫酸氢盐离子之间的平衡中;它可
+    以防止微生物生长和葡萄酒的氧化
   
 - total sulfur dioxide | 二氧化硫总量（mg / dm ^ 3）
 
-    自由和结合形式的SO2量;在低浓度下，SO2在葡萄酒中大部分是不可检测的，但是在游离SO2浓度超过50ppm时，SO2在鼻子和味道上变得明显
+    自由和结合形式的SO2量;在低浓度下，SO2在葡萄酒中大部分是不可检测的，但是在游
+    离SO2浓度超过50ppm时，SO2在鼻子和味道上变得明显
   
 - density | 密度（g / cm 3）
 
@@ -39,11 +44,13 @@ Explore-and-Summarize-Data by 张超
   
 - pH
 
-    描述如何从0（非常酸性）到14（非常碱性）的葡萄酒的酸度或碱度。大多数葡萄酒的pH值在3-4之间
+    描述如何从0（非常酸性）到14（非常碱性）的葡萄酒的酸度或碱度。大多数葡萄酒的
+    pH值在3-4之间
   
 - sulphates | 硫酸盐（硫酸钾-g / dm3）
 
-    一种可以有助于二氧化硫（SO2）水平的葡萄酒添加剂，可以作为抗微生物剂和抗氧化剂
+    一种可以有助于二氧化硫（SO2）水平的葡萄酒添加剂，可以作为抗微生物剂和抗氧化
+    剂
   
 - alcohol | 酒精（％体积）
 
@@ -53,11 +60,17 @@ Explore-and-Summarize-Data by 张超
 
     基于感官数据
 
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
+```
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 library(ggplot2)
 library(ggthemr)
 library(dplyr)
 library(GGally)
+library(gridExtra)
+library(RColorBrewer)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
@@ -76,39 +89,40 @@ summary(wine)
 ```
 
 # Univariate Plots Section
+
+ph 值 直方图
 ```{r echo=FALSE}
 summary(wine$pH)
-# ph 值 直方图
 ggplot(wine, aes(x = pH)) + geom_histogram(aes(fill = ..count..), binwidth = 0.1)
 ```
 
+alcohol 的 直方图
 ```{r echo=FALSE}
 summary(wine$alcohol)
-# alcohol 的 直方图
 ggplot(wine, aes(x = alcohol)) + geom_histogram(aes(fill = ..count..), binwidth = 0.5)
 ```
 
+citric.acid 的 直方图
 ```{r}
 summary(wine$citric.acid)
-# citric.acid 的 直方图
 ggplot(wine, aes(x = citric.acid)) + geom_histogram(aes(fill = ..count..), binwidth = 0.02)
 ```
 
+residual.sugar 的 直方图
 ```{r}
 summary(wine$residual.sugar)
-# residual.sugar 的 直方图
 ggplot(wine, aes(x = residual.sugar)) + geom_histogram(aes(fill = ..count..), binwidth = 0.5)
 ```
 
+chlorides 的 直方图
 ```{r}
 summary(wine$chlorides)
-# chlorides 的 直方图
 ggplot(wine, aes(x = chlorides)) + geom_histogram(aes(fill = ..count..), binwidth = 0.01)
 ```
 
+quality 直方图
 ```{r}
 summary(wine$quality)
-# quality 直方图
 ggplot(wine, aes(x = quality)) + geom_histogram(aes(fill = ..count..), binwidth = 1)
 ```
 
@@ -127,13 +141,16 @@ ggplot(wine, aes(x = quality)) + geom_histogram(aes(fill = ..count..), binwidth 
 每个变量的中位数、平均数等都可以帮助我进行进一步的研究。
 
 # Bivariate Plots Section
+
+pH 值和评分的散点图以及密度图，由于散点图密度太大，不容易区分密集程度，因此添加了一个密度曲线图
+
 ```{r echo=FALSE, Bivariate_Plots}
-# pH 值和评分的散点图以及密度图，由于散点图密度太大，不容易区分密集程度，因此添加了一个密度曲线图
 ggplot(wine) + geom_point(aes(x = pH, y = quality)) + geom_density(aes(x = pH, colour = quality), color = 'white')
 ```
 
+ph 值对应的评分平均值
+
 ```{r}
-# ph 值对应的评分平均值
 wine_data <- data.frame(ph = wine$pH, quality = wine$quality)
 average_ph_quality <- tapply(wine_data[,'quality'], wine_data[,'ph'], mean)
 
@@ -145,14 +162,15 @@ total_data <- cbind(aq, ph_data)
 ggplot(total_data, aes(x = ph, y = average_ph_quality)) + geom_line(aes(color = 'white'))
 ```
 
+ph 对应评分的平均值柱状图，ph 值在 3.1~3.5 之间的评分依然高于其他 ph 值时的评分
+
 ```{r}
-# ph 对应评分的平均值柱状图，ph 值在 3.1~3.5 之间的评分依然高于其他 ph 值时的评分
 ggplot(total_data, aes(x = ph)) + geom_histogram(binwidth = 0.1)
 ```
 
+酒精含量对应的评分平均值
 
 ```{r}
-#酒精含量对应的评分平均值
 wine_data <- data.frame(alcohol = wine$alcohol, quality = wine$quality)
 average_alcohol_quality <- tapply(wine_data[,'quality'], wine_data[,'alcohol'], mean)
 
@@ -166,13 +184,15 @@ total_data <- cbind(aq, alcohol_data)
 ggplot(total_data, aes(x = alcohol, y = average_alcohol_quality)) + geom_line(aes(color = 'white'))
 ```
 
+酒精含量和评分平均值散点图，对数据做拟合（绿色透明部分为 95% 置信区间）。可以看到，酒精度数越高，获得的评分平均值越高，但是结合酒精度数出现的频率直方图可以看到，酒精度数越高，出现的次数反而越少，所以只凭平均值并不能得出酒精度数越高，评分越好的判断。
+
 ```{r}
-# 酒精含量和评分平均值散点图，对数据做拟合（绿色透明部分为 95% 置信区间）。可以看到，酒精度数越高，获得的评分平均值越高，但是结合酒精度数出现的频率直方图可以看到，酒精度数越高，出现的次数反而越少，所以只凭平均值并不能得出酒精度数越高，评分越好的判断。
 ggplot(total_data, aes(x = alcohol, y = average_alcohol_quality)) + geom_point() + geom_smooth(method = lm)
 ```
 
+柠檬酸和评分平均值折线图
+
 ```{r}
-#柠檬酸和评分平均值折线图
 wine_data <- data.frame(citric_acid = wine$citric.acid, quality = wine$quality)
 average_citric_acid_quality <- tapply(wine_data[,'quality'], wine_data[,'citric_acid'], mean)
 
@@ -186,13 +206,13 @@ total_data <- cbind(aq, citric_acid_data)
 ggplot(total_data, aes(x = citric_acid, y = average_citric_acid_quality)) + geom_line(aes(color = 'white')) 
 ```
 
+柠檬酸和评分平均值的散点图以及拟合曲线（绿色透明部分为 95% 置信区间）
 ```{r}
-#柠檬酸和评分平均值的散点图以及拟合曲线（绿色透明部分为 95% 置信区间）
 ggplot(total_data, aes(x = citric_acid, y = average_citric_acid_quality)) + geom_point() + geom_smooth(method = lm)
 ```
 
+柠檬酸和对应的评分中位数折线图,绘制中位数折线图以及拟合曲线（绿色透明部分为 95% 置信区间）
 ```{r}
-#柠檬酸和对应的评分中位数折线图
 median_citric_acid_quality <- tapply(wine_data[,'quality'], wine_data[,'citric_acid'], median)
 
 #组合 data frame
@@ -201,7 +221,6 @@ citric_acid <- as.numeric(rownames(aq))
 citric_acid_data <- data.frame(citric_acid)
 total_data <- cbind(aq, citric_acid_data)
 
-#绘制中位数折线图以及拟合曲线（绿色透明部分为 95% 置信区间）
 ggplot(total_data, aes(x = citric_acid, y = median_citric_acid_quality)) + geom_point() + geom_smooth(method = lm)
 ```
 
@@ -222,9 +241,90 @@ citric_acid 柠檬酸值越高，可能导致评分下降，也可能导致平�
 
 # Multivariate Plots Section
 
+下面是硫酸盐，挥发酸度，酒精和质量之间的关系：
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-set.seed(1836)
-wine$quality <- factor(wine$quality, levels = c(3,4,5,6,7,8))
-ggpairs(wine, aes(colour = quality, alpha = 0.4))
+ggplot(wine, aes(x=volatile.acidity, y=sulphates, size = alcohol, 
+                 color=factor(quality))) + 
+  geom_point() + 
+  scale_color_brewer()
 ```
 
+从图中可以看出来，质量好的葡萄酒集中在上方，同时这里的酒精含量值都比较大，而且比较集中。
+
+下面我们使用轮廓图查看酒精、硫酸盐含量和质量的关系：
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(wine, aes(x = sulphates, y = alcohol, 
+                 colour=factor(wine$quality))) + 
+  geom_density2d(bins=2) + 
+  scale_color_brewer() + 
+  geom_point(color="black", alpha=0.1) 
+```
+
+可以看出来，质量比较高的葡萄酒位于右上方，该处的酒精含量比较高，硫酸盐的含量也比较高。所以，可以认为在酒精度较高、挥发性酸较高的地方的葡萄酒质量比较高。
+
+
+# Final Plots and Summary
+
+## Plot One
+
+下面是酒精含量和葡萄酒质量的箱线图：
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(y=alcohol, x=quality)) + 
+  geom_boxplot() +
+  xlab("alcohol concentration (% by volume)") +
+  ggtitle("Influence of alcohol on wine quality")
+```
+
+## Description One
+从图中可以很明显的看出来，酒精含量高的葡萄酒质量比较高。
+
+## Plot Two
+下面是葡萄酒的酒精含量和质量的密度曲线图：
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+colours = brewer.pal(name="RdBu", n=nlevels(factor(wine$quality)))
+names(colours) = rev(levels(factor(wine$quality)))
+
+ggplot(wine, aes(x=alcohol, fill=factor(quality))) + 
+  geom_density(alpha=0.2) + 
+  scale_fill_manual(values=colours) + 
+  labs(title="Density plot of alcohol content 
+       by red wine quality ratings", 
+       x="alcohol (% by volume)") + 
+  theme(plot.title = element_text(size = 14))
+```
+
+## Description Two
+从图中可以发现，与低质量的葡萄酒相比，质量高的葡萄酒的酒精含量更高。
+
+## Plot Three
+下面是酒精含量和硫酸盐浓度以及葡萄酒质量的关系：
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = wine,
+       aes(y = sulphates, x = alcohol,
+           color = quality)) + geom_point() + ylab("potassium sulphate (g/dm3)") +
+  xlab("alcohol (% by volume)") +
+  ggtitle("Alcohol and sulphates over wine quality")
+```
+## Description Three
+从图中可以看出来，葡萄酒质量越高，酒精浓度越高，伴随着的硫酸盐浓度也越来越高。
+
+# 反思
+
+在报告开头，我先查看了各个变量的分布情况，以期对整个数据有个大概的认识。接下来对
+每个变量和葡萄酒质量的关系逐一做了初步分析，探索了 ph 值、酒精浓度、以及柠檬酸对
+葡萄酒质量的影响，从初步的分析来看，没有发现非常有价值的线索。
+
+在多变量分析中，我把酒精、硫酸盐、挥发性酸和葡萄酒质量做了综合对比分析，发现了在
+质量比较好的情况下，酒精的含量相对比较高。接下来的轮廓图也验证了这个观点，并且发
+现，质量好的葡萄酒中硫酸盐的含量也比较高。
+
+最后的三张最终图中，箱线图、密度曲线图、以及散点图也发现了这个结论，在这几张图中
+，对不同的变量使用了不同的颜色、大小，能够很容易的发现这些观点。
+
+在整个过程中，如果仅使用一种变量，很难发现有价值的结论，而通过多种变量综合分析，
+并能够把这些变量清晰的使用各种技巧展示出来，就能帮助我们发现数据中有价值的结论。
