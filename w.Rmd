@@ -90,25 +90,25 @@ summary(wine)
 
 # Univariate Plots Section
 
-ph 值 直方图
+ph 值直方图，符合正态分布，值大都位于 2.9~3.7 之间，最集中的在 3.2~3.4之间。
 ```{r echo=FALSE}
 summary(wine$pH)
 ggplot(wine, aes(x = pH)) + geom_histogram(aes(fill = ..count..), binwidth = 0.1)
 ```
 
-alcohol 的 直方图
+alcohol 的直方图，大多数值都集中在 9~11 之间，随着酒精浓度的升高，数量逐渐递减。
 ```{r echo=FALSE}
 summary(wine$alcohol)
 ggplot(wine, aes(x = alcohol)) + geom_histogram(aes(fill = ..count..), binwidth = 0.5)
 ```
 
-citric.acid 的 直方图
+citric.acid 的直方图，从低到高数量逐渐减少，其中最左侧的高峰（0.01）和中部的高峰（0.5），以及最右侧的（1.0）可能为异常值。
 ```{r}
 summary(wine$citric.acid)
 ggplot(wine, aes(x = citric.acid)) + geom_histogram(aes(fill = ..count..), binwidth = 0.02)
 ```
 
-residual.sugar 的 直方图
+residual.sugar 的直方图，值集中在 2~3 之间，值域比较大(1~16)。
 ```{r}
 summary(wine$residual.sugar)
 ggplot(wine, aes(x = residual.sugar)) + geom_histogram(aes(fill = ..count..), binwidth = 0.5)
@@ -142,87 +142,30 @@ ggplot(wine, aes(x = quality)) + geom_histogram(aes(fill = ..count..), binwidth 
 
 # Bivariate Plots Section
 
-pH 值和评分的散点图以及密度图，由于散点图密度太大，不容易区分密集程度，因此添加了一个密度曲线图
+pH 值和评分的箱线图，从箱线图上并不能看出明显的关系，由于 pH 集中在 3~3.6 之间，随着 pH 值得升高，葡萄酒质量变化不明显。
 
 ```{r echo=FALSE, Bivariate_Plots}
-ggplot(wine) + geom_point(aes(x = pH, y = quality)) + geom_density(aes(x = pH, colour = quality), color = 'white')
+ggplot(aes(factor(quality), pH), data = wine) +
+geom_jitter( alpha = 0.3)  +
+geom_boxplot( alpha = 0.5)
 ```
 
-ph 值对应的评分平均值
+volatile.acidity 值和质量的箱线图，可以明显的看出来：随着 volatile.acidity 的减小，葡萄酒的质量稳步提升。
 
 ```{r}
-wine_data <- data.frame(ph = wine$pH, quality = wine$quality)
-average_ph_quality <- tapply(wine_data[,'quality'], wine_data[,'ph'], mean)
-
-aq <- data.frame(average_ph_quality)
-ph <- as.numeric(rownames(aq))
-ph_data <- data.frame(ph)
-total_data <- cbind(aq, ph_data)
-
-ggplot(total_data, aes(x = ph, y = average_ph_quality)) + geom_line(aes(color = 'white'))
+ggplot(aes(factor(quality), volatile.acidity), data = wine) +
+geom_jitter( alpha = 0.3)  +
+geom_boxplot( alpha = 0.5)
 ```
 
-ph 对应评分的平均值柱状图，ph 值在 3.1~3.5 之间的评分依然高于其他 ph 值时的评分
+citric.acid 和质量的箱线图，可以明显的看出来：随着 citric.acid 的增大，葡萄酒的质量明显变好。
 
 ```{r}
-ggplot(total_data, aes(x = ph)) + geom_histogram(binwidth = 0.1)
+ggplot(aes(factor(quality), citric.acid), data = wine) +
+geom_jitter( alpha = 0.3)  +
+geom_boxplot( alpha = 0.5)
 ```
 
-酒精含量对应的评分平均值
-
-```{r}
-wine_data <- data.frame(alcohol = wine$alcohol, quality = wine$quality)
-average_alcohol_quality <- tapply(wine_data[,'quality'], wine_data[,'alcohol'], mean)
-
-#组合 data frame
-aq <- data.frame(average_alcohol_quality)
-alcohol <- as.numeric(rownames(aq))
-alcohol_data <- data.frame(alcohol)
-total_data <- cbind(aq, alcohol_data)
-
-#绘制折线图
-ggplot(total_data, aes(x = alcohol, y = average_alcohol_quality)) + geom_line(aes(color = 'white'))
-```
-
-酒精含量和评分平均值散点图，对数据做拟合（绿色透明部分为 95% 置信区间）。可以看到，酒精度数越高，获得的评分平均值越高，但是结合酒精度数出现的频率直方图可以看到，酒精度数越高，出现的次数反而越少，所以只凭平均值并不能得出酒精度数越高，评分越好的判断。
-
-```{r}
-ggplot(total_data, aes(x = alcohol, y = average_alcohol_quality)) + geom_point() + geom_smooth(method = lm)
-```
-
-柠檬酸和评分平均值折线图
-
-```{r}
-wine_data <- data.frame(citric_acid = wine$citric.acid, quality = wine$quality)
-average_citric_acid_quality <- tapply(wine_data[,'quality'], wine_data[,'citric_acid'], mean)
-
-#组合 data frame
-aq <- data.frame(average_citric_acid_quality)
-citric_acid <- as.numeric(rownames(aq))
-citric_acid_data <- data.frame(citric_acid)
-total_data <- cbind(aq, citric_acid_data)
-
-#绘制折线图
-ggplot(total_data, aes(x = citric_acid, y = average_citric_acid_quality)) + geom_line(aes(color = 'white')) 
-```
-
-柠檬酸和评分平均值的散点图以及拟合曲线（绿色透明部分为 95% 置信区间）
-```{r}
-ggplot(total_data, aes(x = citric_acid, y = average_citric_acid_quality)) + geom_point() + geom_smooth(method = lm)
-```
-
-柠檬酸和对应的评分中位数折线图,绘制中位数折线图以及拟合曲线（绿色透明部分为 95% 置信区间）
-```{r}
-median_citric_acid_quality <- tapply(wine_data[,'quality'], wine_data[,'citric_acid'], median)
-
-#组合 data frame
-aq <- data.frame(median_citric_acid_quality)
-citric_acid <- as.numeric(rownames(aq))
-citric_acid_data <- data.frame(citric_acid)
-total_data <- cbind(aq, citric_acid_data)
-
-ggplot(total_data, aes(x = citric_acid, y = median_citric_acid_quality)) + geom_point() + geom_smooth(method = lm)
-```
 
 # Bivariate Analysis
 
@@ -232,7 +175,7 @@ ggplot(total_data, aes(x = citric_acid, y = median_citric_acid_quality)) + geom_
 
 ### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
 
-citric_acid 柠檬酸值越高，可能导致评分下降，也可能导致平分变高，从统计图上来看，这部分数据的波动变化比较大。
+citric_acid 柠檬酸值越高，质量越高，从箱线图上来看，这部分数据的波动变化比较大。虽然整体上质量呈现上升趋势，但是这部分数据大都集中在 5~6 之间，所以如果需要更加能够让人相信的结论的话，应该还需要一些额外的数据来验证。
 
 ### What was the strongest relationship you found?
 
@@ -272,7 +215,7 @@ ggplot(wine, aes(x = sulphates, y = alcohol,
 下面是酒精含量和葡萄酒质量的箱线图：
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(data=wine, aes(y=alcohol, x=quality)) + 
+ggplot(data=wine, aes(y=alcohol, x=factor(quality))) + 
   geom_boxplot() +
   xlab("alcohol concentration (% by volume)") +
   ggtitle("Influence of alcohol on wine quality")
@@ -328,3 +271,5 @@ ggplot(data = wine,
 
 在整个过程中，如果仅使用一种变量，很难发现有价值的结论，而通过多种变量综合分析，
 并能够把这些变量清晰的使用各种技巧展示出来，就能帮助我们发现数据中有价值的结论。
+
+影响葡萄酒质量的因素有很多，而人工分析起来费时费力，我们也可以建立合适的模型，收集更多的数据，借助机器学习来对这些因素进行分析。
